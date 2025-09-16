@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hello Awawa!</title>
+    <style>
+        :root {
+            --bg: #faf8f6;
+            --accent: #14AFA9;
+            font-family: "Prompt", system-ui;
+            font-size: 16px;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: var(--bg);
+            color: #222;
+        }
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            box-sizing: border-box;
+        }
+
+        section {
+            display: none;
+            width: 100%;
+            max-width: 56.25rem;
+            text-align: center;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        #loading img {
+            width: 60%;
+            max-width: 15.625rem;
+            border-radius: 0.75rem;
+        }
+
+        .hero,
+        .logo {
+            width: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero {
+            height: 15rem;
+        }
+
+        .logo {
+            height: 7.5rem;
+        }
+
+        .btn {
+            font-family: "Prompt", system-ui;
+            display: inline-block;
+            margin-top: 0.9375rem;
+            padding: 0.625rem 1.25rem;
+            border: 0;
+            border-radius: 0.5rem;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .img-btn {
+            width: 9.375rem;
+            height: 3.125rem;
+            background: url('assets/btn-go.jpeg') center/contain no-repeat;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            margin-top: 1.875rem;
+        }
+
+        .count-display {
+            position: relative;
+        }
+
+        .count-display img {
+            max-width: 12.5rem;
+            width: 50%;
+            height: auto;
+            transition: all 0.3s ease;
+        }
+
+        .count-display img.snap-size {
+            max-width: 18.75rem;
+        }
+
+        .photo,
+        .flash {
+            position: absolute;
+            inset: 0;
+        }
+
+        .photo {
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity .4s ease;
+        }
+
+        .flash {
+            background: white;
+            opacity: 0;
+            z-index: 3;
+        }
+
+        .polaroid {
+            width: 90%;
+            max-width: 18.75rem;
+            aspect-ratio: 9/16;
+            perspective: 62.5rem;
+            position: relative;
+            display: inline-block;
+            margin-bottom: 3.75rem;
+        }
+
+        .polaroid-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.8s cubic-bezier(.4, 2, .3, 1);
+            transform-style: preserve-3d;
+        }
+
+        .polaroid img.polaroid-front,
+        .polaroid img.polaroid-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 0.5rem;
+            backface-visibility: hidden;
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.03);
+            top: 0;
+            left: 0;
+            object-fit: cover;
+        }
+
+        .polaroid img.polaroid-back {
+            transform: rotateY(180deg);
+        }
+
+        .polaroid.flipped .polaroid-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-btn {
+            position: absolute;
+            bottom: -5rem;
+            left: 50%;
+            width: calc(100% - 1.25rem);
+            transform: translateX(-50%);
+        }
+
+        .primary-btn {
+            border: 2px solid #222;
+            color: #222;
+            background: transparent;
+            font-weight: bold;
+            padding: 0.35rem 1.8rem;
+            border-radius: 30rem;
+        }
+
+        @media (max-width:30rem) {
+            .hero {
+                height: 10rem;
+                margin-bottom: 1.875rem;
+            }
+
+            .logo {
+                height: 6.25rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .img-btn {
+                width: 7.5rem;
+                height: 2.5rem;
+            }
+
+            .count-display img {
+                width: 70%;
+            }
+
+            .polaroid {
+                width: 80%;
+            }
+
+            .flip-btn {
+                bottom: -2.1875rem;
+                font-size: 0.875rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <!-- Loading -->
+        <section id="loading" class="active">
+            <img src="assets/loading.gif" alt="loading">
+            <div>กำลังโหลด...</div>
+        </section>
+
+        <!-- Main -->
+        <section id="main">
+            <div class="logo" style="background-image:url('assets/logo.png')"></div>
+            <div class="hero" style="background-image:url('assets/photobooth.png')"></div>
+            <button class="primary-btn btn" onclick="show('countdown')">เริ่มเลย →</button>
+        </section>
+
+        <!-- Countdown -->
+        <section id="countdown">
+            <div class="count-display">
+                <img id="countImage" src="assets/count3.png" alt="countdown">
+                <div class="photo" id="countPhoto"></div>
+                <div class="flash" id="flash"></div>
+            </div>
+            <audio id="cameraSound" src="assets/camera.wav" preload="auto"></audio>
+        </section>
+
+        <!-- Polaroid -->
+        <section id="polaroid">
+            <div class="polaroid" id="p1">
+                <div class="polaroid-inner">
+                    <img class="polaroid-front" src="assets/front.png" alt="front">
+                    <img class="polaroid-back" src="assets/back.png" alt="back">
+                </div>
+                <button class="btn flip-btn" style="display:none" onclick="flip('p1')">แตะเพื่อพลิกดูด้านหลัง</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function show(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if (id === 'countdown') startCountdown();
+            if (id === 'polaroid') autoDevelop('p1');
+        }
+
+        window.addEventListener('load', () => setTimeout(() => show('main'), 3000));
+
+        const countImages = ['assets/count3.png', 'assets/count2.png', 'assets/count1.png', 'assets/snap.png'];
+        let timer = null;
+
+        function startCountdown() {
+            if (timer) { clearInterval(timer); timer = null; }
+            const img = document.getElementById('countImage');
+            const flash = document.getElementById('flash');
+            const photo = document.getElementById('countPhoto');
+            const sound = document.getElementById('cameraSound');
+            let step = 0;
+            img.src = countImages[step];
+            img.classList.remove('snap-size');
+            photo.style.opacity = 0;
+
+            timer = setInterval(() => {
+                step++;
+                if (step < countImages.length) {
+                    img.src = countImages[step];
+                    if (step === countImages.length - 1) {
+                        img.classList.add('snap-size');
+                        flash.style.opacity = 1;
+                        setTimeout(() => flash.style.opacity = 0, 80);
+
+                        if (sound.readyState >= 2) {
+                            sound.currentTime = 0;
+                            sound.play().catch(e => console.log(e));
+                        }
+                    } else img.classList.remove('snap-size');
+                } else {
+                    clearInterval(timer);
+                    timer = null;
+                    img.classList.remove('snap-size');
+                    show('polaroid');
+                }
+            }, 1000);
+        }
+
+        function autoDevelop(id) {
+            const polaroid = document.getElementById(id);
+            const frontImg = polaroid.querySelector('.polaroid-front');
+            const flipBtn = polaroid.querySelector('.flip-btn');
+
+            frontImg.style.transition = 'opacity 8s ease';
+            frontImg.style.opacity = 0;
+            setTimeout(() => frontImg.style.opacity = 1, 50);
+
+            setTimeout(() => flipBtn.style.display = 'inline-block', 5000);
+        }
+
+        function flip(id) {
+            const polaroid = document.getElementById(id);
+            polaroid.classList.toggle('flipped');
+        }
+
+        // เพิ่ม event listener ให้แตะที่ polaroid แล้วพลิกได้
+        document.getElementById('p1').addEventListener('click', function (e) {
+            // ไม่ให้พลิกถ้ากดที่ปุ่ม flip-btn
+            if (!e.target.classList.contains('flip-btn')) {
+                flip('p1');
+            }
+        });
+    </script>
+</body>
+
+</html>
